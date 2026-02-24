@@ -6,7 +6,6 @@ from datasets import load_dataset
 
 from GranularitySelection import multi_level_collapse
 
-
 parser = argparse.ArgumentParser(description="Choose taxonomy and number of iterations.")
 parser.add_argument(
     "--taxonomy",
@@ -18,7 +17,7 @@ parser.add_argument(
     "--iterations",
     type=int,
     default=1,
-    help="Number of iterations for multi_level_collapse (default: 1)."
+    help="Number of iterations for multi_level_collapse."
 )
 args = parser.parse_args()
 
@@ -30,9 +29,9 @@ test = dataset["test"]
 
 # Determine the taxonomy file name based on the argument
 taxonomy_file = (
-    "calculationMasterTaxonomy.json"
+    "calculationMasterTaxonomy.jsonl"
     if args.taxonomy == "calculation"
-    else "presentationMasterTaxonomy.json"
+    else "presentationMasterTaxonomy.jsonl"
 )
 
 file_path = hf_hub_download(
@@ -41,14 +40,10 @@ file_path = hf_hub_download(
     repo_type="dataset" 
 )
 
-with open(file_path, "r") as f:
-    taxonomy = json.load(f)
+taxonomy_df = pd.read_json(file_path, orient='records', lines=True)
 
-taxonomy_df = pd.DataFrame(taxonomy)
 print("started granularity selection.")
-# Process the data using multi_level_collapse
 train, validation, test = multi_level_collapse(taxonomy_df, train, validation, test, args.iterations)
-
 
 # Define output file names with the iteration count in them
 output_prefix = f"Granularity{args.iterations}"

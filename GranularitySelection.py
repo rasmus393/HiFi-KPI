@@ -7,7 +7,6 @@ def convert_to_level(dataset, conversion_dict):
     If a label is not found in conversion_dict, it remains unchanged.
     """
     updated_dataset = []
-    print(dataset)
     for entry in tqdm(dataset, desc="Processing entries"):
         new_entry = entry.copy()
         new_entry["entities"] = [
