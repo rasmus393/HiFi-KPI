@@ -21,7 +21,7 @@ def create_bio_tags(text, entities):
             bio_tags[start_token] = f"{entity['Label']}"
             for i in range(start_token + 1, end_token + 1):
                 # I-token is most likely only present due to edge cases in data e.g. a weird span white space tagged or similar.
-                print(f"DEBUG: No I-token inserted for word '{tokens[i]}' (index {i}) in entity: {entity}")
+                print("no I-token")
     
     return tokens, bio_tags
 
