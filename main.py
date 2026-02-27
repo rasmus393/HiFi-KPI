@@ -45,7 +45,6 @@ taxonomy_df = pd.read_json(file_path, orient='records', lines=True)
 print("started granularity selection.")
 train, validation, test = multi_level_collapse(taxonomy_df, train, validation, test, args.iterations)
 
-# Define output file names with the iteration count in them
 output_prefix = f"Granularity{args.iterations}"
 train_output_path = f"{output_prefix}_train.json"
 validation_output_path = f"{output_prefix}_validation.json"
