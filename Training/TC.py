@@ -1,3 +1,4 @@
+import os
 import json
 import pickle
 import torch, gc
@@ -21,6 +22,8 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
+os.makedirs("Final_reports", exist_ok=True)
+
 dataset = load_dataset("AAU-NLP/HiFi-KPI")
 train_data = dataset["train"]
 validation_data = dataset["validation"]
@@ -41,7 +44,10 @@ file_path = hf_hub_download(
 taxonomy_df = pd.read_json(file_path, orient='records', lines=True)
 
 multi_collap = multi_level_collapse(taxonomy_df, train_data, validation_data, test_data, iterations=10)
-train_embeddings, train_labels, val_embeddings, val_labels, test_embeddings, test_labels = make_embeddings(train_data,validation_data,test_data, embedding_model="google/embeddinggemma-300m")
+train_embeddings, train_labels, val_embeddings, val_labels, test_embeddings, test_labels = make_embeddings(train_data,
+                                                                                                           validation_data,
+                                                                                                           test_data,
+                                                                                                           embedding_model="google/embeddinggemma-300m")
 input_dim = train_embeddings.shape[1]
 print(f"Input dim: {input_dim}")
 encoders = []
@@ -67,12 +73,14 @@ for i in range(0, len(multi_collap[3]), 2):
         cur_train = cur_label_encoder.transform(multi_collap[0][i])
         cur_val = cur_label_encoder.transform(multi_collap[1][i])
         test = cur_label_encoder.transform(multi_collap[2][i])
-        model = run_classifier(train_embeddings,cur_train, val_embeddings, cur_val, cur_label_encoder, input_dim=input_dim, batch_size=128, device="cuda")
-        
+        model = run_classifier(train_embeddings, cur_train, val_embeddings, cur_val, cur_label_encoder,
+                               input_dim=input_dim, batch_size=128, device="cuda")
+
         model.eval()
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         val_embeddings = torch.as_tensor(val_embeddings, dtype=torch.float32, device=device)
         test_embeddings = torch.as_tensor(test_embeddings, dtype=torch.float32, device=device)
+
 
         def batched_inference(model, embeddings, batch_size=64):
             model.eval()
@@ -85,6 +93,8 @@ for i in range(0, len(multi_collap[3]), 2):
                     preds = torch.argmax(outputs, dim=1)
                     all_preds.append(preds)
             return torch.cat(all_preds).cpu().numpy()
+
+
         batch_size = 2048
         val_preds = batched_inference(model, val_embeddings, batch_size)
         test_preds = batched_inference(model, test_embeddings, batch_size)
@@ -104,7 +114,8 @@ for i in range(0, len(multi_collap[3]), 2):
         test_accs.append(test_acc)
         test_f1s.append(test_f1)
 
-        print(f"[TEST] Accuracy: {test_acc:.4f}, F1 (macro): {test_f1:.4f}, Precision: {test_precision:.4f}, Recall: {test_recall:.4f}, Micro F1: {test_micro_f1:.4f}")
+        print(
+            f"[TEST] Accuracy: {test_acc:.4f}, F1 (macro): {test_f1:.4f}, Precision: {test_precision:.4f}, Recall: {test_recall:.4f}, Micro F1: {test_micro_f1:.4f}")
         true_labels_str = cur_label_encoder.inverse_transform(test)
         predicted_labels_str = cur_label_encoder.inverse_transform(test_preds)
         test_texts = [item['text'] for item in test_data]
@@ -115,9 +126,9 @@ for i in range(0, len(multi_collap[3]), 2):
             'predicted_label': predicted_labels_str
         })
 
-        output_filename = f"Final_reports/cal_predictions_Level_{i+1}.csv"
+        output_filename = f"Final_reports/{args.taxonomy}_predictions_Level_{i + 1}.csv"
         output_df.to_csv(output_filename, index=False)
-        del model 
+        del model
         gc.collect()
         torch.cuda.empty_cache()
 
@@ -139,5 +150,5 @@ print("test f1s", test_f1s_level)
 for level_idx, reports_for_specific_level in enumerate(all_reports):
     original_i_value = 1 + level_idx * 2
     for single_report_df in reports_for_specific_level:
-        filename = f"Final_reports/cal_Level_{original_i_value}_clean_train_gemma_embeddings.csv"
+        filename = f"Final_reports/{args.taxonomy}_Level_{original_i_value}_clean_train_gemma_embeddings.csv"
         single_report_df.to_csv(filename)

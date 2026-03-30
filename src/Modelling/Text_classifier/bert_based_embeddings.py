@@ -21,9 +21,9 @@ def make_embeddings(train_data,validation_data,test_data, embedding_model):
     test_sentences, test_labels = extract_data(test_data)
     model = SentenceTransformer(embedding_model)
 
-    train_embeddings = model.encode(train_sentences, batch_size=256, show_progress_bar=True)
-    val_embeddings = model.encode(val_sentences, batch_size=256, show_progress_bar=True)
-    test_embeddings = model.encode(test_sentences, batch_size=256, show_progress_bar=True)
+    train_embeddings = model.encode(train_sentences, batch_size=128, show_progress_bar=True) #256 original batch size
+    val_embeddings = model.encode(val_sentences, batch_size=128, show_progress_bar=True) #256 original batch size
+    test_embeddings = model.encode(test_sentences, batch_size=128, show_progress_bar=True) #256 original batch size
 
     return train_embeddings, train_labels, val_embeddings, val_labels, test_embeddings, test_labels
 

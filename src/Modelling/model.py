@@ -114,7 +114,6 @@ def run_train_loop(model, accelerator, tokenizer, optimizer,
     metric = evaluate.load("seqeval")
     
     for epoch in range(epochs):
-        # Training
         model.train()
         batch_progress = tqdm(train_dataloader,
                             desc=f"Epoch {epoch+1}",

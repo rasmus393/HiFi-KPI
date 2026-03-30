@@ -86,5 +86,5 @@ print("Accuracy on test set:", report_dict["accuracy"])
 print("Weighted F1-score on test set:", report_dict["weighted avg"]["f1-score"])
 print("Macro F1-score on test set:", report_dict["macro avg"]["f1-score"])
 report_df = pd.DataFrame(report_dict).transpose()
-report_df.to_csv(f"classification_report_{model_name}.csv", index=True)
+report_df.to_csv(f"classification_report_{safe_model_name}.csv", index=True)
 

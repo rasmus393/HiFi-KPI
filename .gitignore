@@ -1,2 +1,6 @@
 *.json
 uv.lock
+/Final_reports
+*.log
+*.pyc
+*.safetensors

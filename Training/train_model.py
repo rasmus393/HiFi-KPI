@@ -8,13 +8,17 @@ from datasets import load_dataset
 model_name = "SALT-NLP/FLANG-BERT"
 
 label_count = 999
-batch_size = 96
+batch_size = 48
 learning_rate = 1e-5
 patience = 2
 num_train_epochs = 50
-outputdir = "FLANG_1000_no_BIO_final_cleaned"
+outputdir = "FLANG_1000_no_BIO_final"
 
 dataset = load_dataset("AAU-NLP/HiFi-KPI")
+dataset['train'] = dataset['train'].select(range(100000))
+dataset['validation'] = dataset['validation'].select(range(5000))
+dataset['test'] = dataset['test'].select(range(5000))
+
 train = dataset['train']
 validation = dataset['validation']
 test = dataset['test']
